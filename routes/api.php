@@ -3,12 +3,16 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
-// Test endpoint
 Route::get('/test', function () {
     return response()->json([
         'message' => 'API is now working'
     ]);
 });
 
-// User CRUD routes using resource - automatically handles all HTTP methods
-Route::apiResource('users', \App\Http\Controllers\UserController::class);
+Route::prefix('users')->group(function () {
+    Route::post('/', [UserController::class, 'store']);
+    Route::get('/', [UserController::class, 'index']);
+    Route::get('/{id}', [UserController::class, 'show']);
+    Route::put('/{id}', [UserController::class, 'update']);
+    Route::delete('/{id}', [UserController::class, 'destroy']);
+});
