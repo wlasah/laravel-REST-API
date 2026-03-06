@@ -13,7 +13,21 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $users = User::all();
+            // Get all users with their roles and permissions
+            $users = User::with('roles:id,name')
+                ->get()
+                ->map(function ($user) {
+                    return [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'roles' => $user->getRoleNames(),
+                        'permissions' => $user->getAllPermissions()->pluck('name'),
+                        'created_at' => $user->created_at,
+                        'updated_at' => $user->updated_at,
+                    ];
+                });
+
             return response()->json([
                 'success' => true,
                 'message' => 'Users retrieved successfully',
@@ -71,7 +85,7 @@ class UserController extends Controller
     public function show($id): JsonResponse
     {
         try {
-            $user = User::find($id);
+            $user = User::with('roles:id,name')->find($id);
 
             if (!$user) {
                 return response()->json([
@@ -83,7 +97,15 @@ class UserController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'User retrieved successfully',
-                'data' => $user
+                'data' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                    'created_at' => $user->created_at,
+                    'updated_at' => $user->updated_at,
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
